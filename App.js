@@ -3,16 +3,19 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Pressable, Text } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
+import { useCallback, useEffect, useState } from 'react';
 
 // Screen imports
 import AddCard from './screens/AddCard';
 import SearchCard from './screens/SearchCard';
 import Collection from './screens/Collection';
 import CardDetails from './screens/CardDetails';
+import { connectToDatabase, createTables } from './backend/initDB';
 
 const CollectionStack = createNativeStackNavigator();
 const SearchStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+
 
 function CollectionScreensStack() {
   return (
@@ -47,6 +50,18 @@ function SearchScreensStack() {
 }
 
 export default function App() {
+  const loadData = useCallback(async () => {
+    try {
+      const db = connectToDatabase()
+      await createTables(db)
+    } catch (error) {
+      console.error(error)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
   return (
     <NavigationContainer>
     <Tab.Navigator

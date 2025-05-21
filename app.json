@@ -39,7 +39,8 @@
         {
           "cameraPermission": "Allow Pokemon TCG Scanner to access your camera."
         }
-      ]
+      ],
+      "expo-sqlite"
     ]
   }
 }
