@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from backend_methods import get_card, insert_into_card_table  # adjust import paths
+# adjust import paths
+from backend_methods.db_methods import get_card, insert_into_card_table, populate_tables, retrieve_card_pricing_table, retrieve_pokemon_information_table
 
 app = FastAPI()
 
@@ -16,8 +17,18 @@ app.add_middleware(
 
 @app.get("/card/{card_id}")
 def fetch_and_insert_card(card_id: str):
-    card = get_card(card_id)
-    if card:
-        insert_into_card_table(card)
+    if card_id:
+        populate_tables(card_id)
+        print(retrieve_card_pricing_table())
         return {"status": "success", "message": f"{card_id} inserted"}
     raise HTTPException(status_code=404, detail="Card not found")
+
+
+@app.get("/cards/pricing")
+def retrieve_cards_pricing():
+    retrieve_card_pricing_table()
+
+
+@app.get("/cards/pokemon")
+def retrieve_cards_information():
+    retrieve_pokemon_information_table()

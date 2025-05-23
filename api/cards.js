@@ -7,14 +7,14 @@ export async function insertCard(cardId) {
   return res.json();                                        // { status, message }
 }
 
-export async function insertAllTables(cardId) {
-  const res = await fetch(`${BASE_URL}/card/full/${cardId}`, { method: 'POST' });
-  if (!res.ok) throw new Error(`Insert full failed: ${res.status}`);
+export async function getCardLibraryPricing() {
+  const res = await fetch(`${BASE_URL}/cards/pricing`);
+  if (!res.ok) throw new Error("Failed to fetch card library pricing");
   return res.json();
 }
 
-export async function getAllCards() {
-  const res = await fetch(`${BASE_URL}/cards`);
-  if (!res.ok) throw new Error(`Fetch cards failed: ${res.status}`);
-  return res.json();                                        // { cards: [...] }
+export async function getPokemonLibraryInfo() {
+  const res = await fetch(`${BASE_URL}/cards/pokemon`);
+  if (!res.ok) throw new Error("Failed to fetch Pokémon library info");
+  return res.json();
 }

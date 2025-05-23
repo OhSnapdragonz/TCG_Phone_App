@@ -3,6 +3,8 @@
 # Backend
 backend/package*
 .venv*
+__pycache__*
+*.db
 
 # dependencies
 node_modules/
