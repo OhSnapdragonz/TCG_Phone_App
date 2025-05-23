@@ -11,6 +11,7 @@ import SearchCard from './screens/SearchCard';
 import Collection from './screens/Collection';
 import CardDetails from './screens/CardDetails';
 import { connectToDatabase, createTables } from './backend/initDB';
+import DatabaseTestScreen from './screens/testDB';
 
 const CollectionStack = createNativeStackNavigator();
 const SearchStack = createNativeStackNavigator();
@@ -62,7 +63,7 @@ export default function App() {
   useEffect(() => {
     loadData()
   }, [loadData])
-  return (
+  return (  
     <NavigationContainer>
     <Tab.Navigator
       initialRouteName="Collection"
@@ -94,6 +95,11 @@ export default function App() {
       <Tab.Screen
         name="Search"
         component={SearchScreensStack}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen
+        name="Test DB"
+        component={DatabaseTestScreen}
         options={{ headerShown: false }}
       />
     </Tab.Navigator>

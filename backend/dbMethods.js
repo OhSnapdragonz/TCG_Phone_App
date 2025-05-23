@@ -7,7 +7,7 @@ const apiKey = Constants.expoConfig.extra.API_KEY;
 const db = connectToDatabase()
 
 
-export const getCard = (id) => {
+export const getCard = async (id) => {
     /**
      * Fetches the card from the tcg api and returns a json dict containing
      * the card information
@@ -15,49 +15,100 @@ export const getCard = (id) => {
      * return card: The json dict containing the card information
      */
 
-}
+    try {
+    const response = await fetch(`${apiUrl}${id}`, {
+      method: 'GET',
+      headers: {
+        'X-Api-Key': apiKey,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const cardInfo = await response.json();
+
+    if (response.ok) {
+      console.log(
+        `Success ${response.status}! Retrieved info for card -> ${cardInfo.data.id}: ${cardInfo.data.name}`
+      );
+      return cardInfo;
+    } else {
+      console.error(`Error: ${response.status}`, cardInfo);
+      return null;
+    }
+  } catch (error) {
+    console.error('Request failed:', error);
+    return null;
+  }
+};
+
+
+////////////////////////////////////////////////////// Data Extraction Functions //////////////////////////////////////////////////
+
+export const extractCardTableData = (card) => {
+  const cardData = card.data;
+
+  const cardId = cardData.id;
+  const name = cardData.name;
+  const supertype = cardData.supertype;
+  const subtypes = (cardData.subtypes || []).join(', ');
+  const setName = cardData.set.name;
+  const rarity = cardData.rarity || 'Unknown';
+  const imageUrl = cardData.images.small;
+  const url = cardData.tcgplayer?.url || ''; // Safe fallback
+
+  return [
+    cardId,
+    name,
+    supertype,
+    subtypes,
+    setName,
+    rarity,
+    imageUrl,
+    url,
+  ];
+};
 
 ////////////////////////////////////////////////////////// Insert Functions ///////////////////////////////////////////////////////
 
-export const insertIntoCardTable = (card) => {
-  const {
-    id,
-    name,
-    supertype,
-    subtype,
-    set_name,
-    rarity,
-    image_url,
-    url,
-  } = card;
+export const insertCardIntoTable = async (card, db) => {
+  const cardData = extractCardTableData(card);
 
-  db.transaction(tx => {
-    // First, check if the card already exists
-    tx.executeSql(
-      'SELECT count FROM Card WHERE id = ?',
-      [id],
-      (_, { rows }) => {
-        if (rows.length > 0) {
-          const newCount = rows._array[0].count + 1;
-          // Update the count
-          tx.executeSql(
-            'UPDATE Card SET count = ? WHERE id = ?',
-            [newCount, id]
-          );
-        } else {
-          // Insert new card
-          tx.executeSql(
-            `INSERT INTO Card (id, name, supertype, subtype, set_name, rarity, image_url, url, count)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`,
-            [id, name, supertype, subtype, set_name, rarity, image_url, url]
-          );
-        }
-      },
-      (txObj, error) => {
-        console.error('Failed to insert or update card:', error);
-        return false;
-      }
-    );
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT count FROM Card WHERE id = ?',
+        [cardData[0]],
+        (_, { rows }) => {
+          if (rows.length > 0) {
+            const newCount = rows.item(0).count + 1;
+            tx.executeSql(
+              'UPDATE Card SET count = ? WHERE id = ?',
+              [newCount, cardData[0]],
+              () => resolve(), // <- success
+              (_, error) => reject(error) // <- error on update
+            );
+          } else {
+            tx.executeSql(
+              `INSERT INTO Card (id, name, supertype, subtype, set_name, rarity, image_url, url, count)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+              cardData,
+              () => resolve(), // <- success
+              (_, error) => reject(error) // <- error on insert
+            );
+          }
+        },
+        (_, error) => reject(error) // <- error on SELECT
+      );
+    });
   });
 };
 
+export const populateTables = async (id, db) => {
+    const card = await getCard(id)
+    if (card) {
+        await insertCardIntoTable(card, db)
+        console.log(`Successfully inserted data for card ${id}`)
+    } else {
+    console.log(`❌ Card not found or failed to fetch: ${id}`);
+  }
+}
