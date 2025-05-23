@@ -3,6 +3,12 @@ import { View, Text } from 'react-native';
 import { connectToDatabase } from '../backend/initDB';
 import { getCard, insertCardIntoTable, populateTables } from '../backend/dbMethods';
 
+const IP = Constants.expoConfig.extra.IP_ADDRESS;
+
+fetch(`http://${IP}:8000/card/swsh4-25`)
+  .then(res => res.json())
+  .then(data => console.log(data))
+
 const DatabaseTestScreen = () => {
   useEffect(() => {
     const runTest = async () => {

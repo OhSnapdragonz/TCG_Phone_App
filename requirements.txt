@@ -1,0 +1,12 @@
+matplotlib_inline
+matplotlib
+ipython
+pokemontcgsdk
+ultralytics
+torchvision
+requests
+dotenv 
+pandas
+imagehash
+streamlit
+fastapi[all]

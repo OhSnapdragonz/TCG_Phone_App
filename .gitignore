@@ -2,6 +2,7 @@
 
 # Backend
 backend/package*
+.venv*
 
 # dependencies
 node_modules/
